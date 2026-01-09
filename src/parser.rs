@@ -1,9 +1,10 @@
-use std::fmt;
-
 use http::Uri;
-use phf::phf_map;
+use std::{collections::HashMap, fmt, sync::OnceLock};
 
 use crate::lexer::{Lexer, Token, TokenKind};
+
+pub static REQUEST_KEYWORDS: OnceLock<HashMap<&str, ReqKind>> = OnceLock::new();
+pub static ACTION_KEYWORDS: OnceLock<HashMap<&str, ActionKind>> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 pub enum RuleItem {
@@ -74,7 +75,7 @@ pub struct Parser<'lex> {
 }
 
 impl<'lex> Parser<'lex> {
-    pub fn new(lexer: &mut Lexer) -> Parser {
+    pub fn new(lexer: &mut Lexer) -> Parser<'_> {
         let token = lexer.next_token();
         Parser { lexer, tok: token }
     }
@@ -100,11 +101,11 @@ impl<'lex> Parser<'lex> {
                     Ok(x) => x.clone(),
                     Err(e) => panic!("{}: {}", e, part2),
                 };
-                let req_type = match REQUEST_KEYWORDS.get(part3) {
+                let req_type = match get_request_keywords().get(part3.as_str()) {
                     Some(x) => *x,
                     None => panic!("Could not parse request: {}", part3),
                 };
-                let action_type = match ACTION_KEYWORDS.get(part4) {
+                let action_type = match get_action_keywords().get(part4.as_str()) {
                     Some(x) => *x,
                     None => panic!("Could not parse action: {}", part4),
                 };
@@ -154,18 +155,26 @@ impl<'lex> Parser<'lex> {
     }
 }
 
-pub static REQUEST_KEYWORDS: phf::Map<&'static str, ReqKind> = phf_map! {
-    "*" => ReqKind::All,
-    "image" => ReqKind::Image,
-    "inline-script" => ReqKind::InlineScript,
-    "1p-script" => ReqKind::FstpScript,
-    "3p" => ReqKind::Thrdp,
-    "3p-script" => ReqKind::ThrdpScript,
-    "3p-frame" => ReqKind::ThrdpFrame,
-};
+pub fn get_request_keywords() -> &'static HashMap<&'static str, ReqKind> {
+    REQUEST_KEYWORDS.get_or_init(|| {
+        let mut keywords = HashMap::new();
+        keywords.insert("*", ReqKind::All);
+        keywords.insert("image", ReqKind::Image);
+        keywords.insert("inline-script", ReqKind::InlineScript);
+        keywords.insert("1p-script", ReqKind::FstpScript);
+        keywords.insert("3p", ReqKind::Thrdp);
+        keywords.insert("3p-script", ReqKind::ThrdpScript);
+        keywords.insert("3p-frame", ReqKind::ThrdpFrame);
+        keywords
+    })
+}
 
-pub static ACTION_KEYWORDS: phf::Map<&'static str, ActionKind> = phf_map! {
-    "block" => ActionKind::Block,
-    "noop" => ActionKind::Noop,
-    "allow" => ActionKind::Allow,
-};
+pub fn get_action_keywords() -> &'static HashMap<&'static str, ActionKind> {
+    ACTION_KEYWORDS.get_or_init(|| {
+        let mut keywords = HashMap::new();
+        keywords.insert("block", ActionKind::Block);
+        keywords.insert("noop", ActionKind::Noop);
+        keywords.insert("allow", ActionKind::Allow);
+        keywords
+    })
+}
