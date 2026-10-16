@@ -1,8 +1,11 @@
 [package]
-name = "filter_manager"
+name = "hello_rs"
 version = "0.1.0"
 edition = "2024"
 publish = false
+
+[workspace]
+members = ["crates/*"]
 
 [dependencies]
 http = "0.2"

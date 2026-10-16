@@ -5,11 +5,9 @@
             "name": "Launch Program",
             "type": "lldb-dap",
             "request": "launch",
-            "program": "${workspaceRoot}/target/debug/main",
+            "program": "${workspaceRoot}/target/debug/main.exe",
             "args": [],
-            // "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
-            // "environment": [],
             "console": "integratedTerminal",
             "preLaunchTask": "rust: cargo build"
         }

@@ -12,7 +12,8 @@
 				"$rustc"
 			],
 			"group": {
-				"kind": "build"
+				"kind": "build",
+				"isDefault": true
 			},
 			"presentation": {
 				"reveal": "silent",
